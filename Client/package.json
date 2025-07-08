@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "start": "serve -s dist"
+    "start": "serve -s dist -l $PORT",
+    "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
     "axios": "^1.10.0",
