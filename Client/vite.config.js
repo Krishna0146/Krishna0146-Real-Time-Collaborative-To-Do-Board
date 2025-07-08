@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0', // Bind to all interfaces for Render
-    port: process.env.PORT || 5173, // Use Render's PORT env variable
+    port: parseInt(process.env.PORT) || 5173, // Use Render's PORT env variable
     proxy: {
       '/api': {
         target: process.env.API_URL || 'http://localhost:5000',
