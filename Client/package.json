@@ -7,13 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "start": "vite preview",
+    "start": "npx serve dist -s -n -l tcp://0.0.0.0:$PORT",
     "preview": "vite preview"
   },
   "dependencies": {
     "axios": "^1.10.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "serve": "^14.2.4",
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
