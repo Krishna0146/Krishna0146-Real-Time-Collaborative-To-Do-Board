@@ -10,11 +10,16 @@ export default defineConfig({
       '/api': {
         target: process.env.API_URL || 'http://localhost:5000',
         changeOrigin: true,
+        secure: false, // Set to true if your API uses HTTPS
       },
     },
   },
   preview: {
     host: '0.0.0.0',
-    port: process.env.PORT || 4173
-  }
+    port: parseInt(process.env.PORT) || 4173, // Parse as integer for consistency
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false, // Disable source maps for production to reduce bundle size
+  },
 })
