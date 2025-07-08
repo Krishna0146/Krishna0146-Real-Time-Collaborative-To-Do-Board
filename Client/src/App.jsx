@@ -3,8 +3,18 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import './App.css';
 
+// Debug: Log environment variables
+console.log('Environment Variables Debug:');
+console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('VITE_SOCKET_URL:', import.meta.env.VITE_SOCKET_URL);
+console.log('All env vars:', import.meta.env);
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+
+console.log('Final API_URL:', API_URL);
+console.log('Final SOCKET_URL:', SOCKET_URL);
+
 const socket = io(SOCKET_URL);
 
 function App() {
