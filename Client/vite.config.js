@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://krishna0146-real-time-collaborative-to.onrender.com',
         changeOrigin: true,
       },
     },
