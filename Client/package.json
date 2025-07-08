@@ -6,10 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port $PORT",
     "build": "vite build",
-    "start": "serve -s dist --listen ${PORT:-5000}",
-    "start-alt1": "serve -s dist -p ${PORT:-5000}",
-    "start-alt2": "npx serve -s dist -l tcp://0.0.0.0:$PORT",
-    "start-alt3": "node -e \"const serve = require('serve'); serve('dist', { port: process.env.PORT || 5000 })\"",
+    "start": "serve -s dist --listen 0.0.0.0:${PORT:-5000}",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
