@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port $PORT",
+    "dev": "vite",
     "build": "vite build",
-    "start": "serve -s dist -p ${PORT:-5000} -H 0.0.0.0",
-    "preview": "vite preview --host 0.0.0.0"
+    "start": "serve -s dist",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.5.2",
