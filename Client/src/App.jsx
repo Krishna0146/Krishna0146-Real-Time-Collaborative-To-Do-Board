@@ -3,7 +3,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import './App.css';
 
-const API_URL = 'https://krishna0146-real-time-collaborative-to.onrender.com';
+const API_URL = 'https://krishna0146-real-time-collaborative-to.onrender.com/api';
 const socket = io('https://krishna0146-real-time-collaborative-to.onrender.com');
 
 function App() {
