@@ -920,3 +920,38 @@ select:focus {
     flex-direction: column;
   }
 }
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 15px;
+  font-size: 0.9em;
+}
+
+.status-indicator {
+  font-size: 0.8em;
+}
+
+.status-text {
+  color: #666;
+}
+
+.status-indicator.connected + .status-text {
+  color: #28a745;
+}
+
+.status-indicator.disconnected + .status-text {
+  color: #dc3545;
+}
+
+/* Optional: Add a subtle animation for the connection status */
+.status-indicator {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

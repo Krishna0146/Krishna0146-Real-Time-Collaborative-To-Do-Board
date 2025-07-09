@@ -1,20 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import './App.css';
 
-// Debug: Log environment variables
-//console.log('Environment Variables Debug:');
-//console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
-//console.log('VITE_SOCKET_URL:', import.meta.env.VITE_SOCKET_URL);
-//console.log('All env vars:', import.meta.env);
-
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 
-//console.log('Final API_URL:', API_URL);
-//console.log('Final SOCKET_URL:', SOCKET_URL);
-const socket = io(SOCKET_URL);
+let socket = null;
 
 function App() {
   const [user, setUser] = useState(null);
@@ -28,6 +20,7 @@ function App() {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [showActivityLog, setShowActivityLog] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   // Auth form state
   const [formData, setFormData] = useState({
@@ -44,6 +37,80 @@ function App() {
     priority: 'Medium'
   });
 
+  // Initialize socket connection
+  const initializeSocket = useCallback(() => {
+    if (socket) {
+      socket.disconnect();
+    }
+    
+    socket = io(SOCKET_URL, {
+      auth: {
+        token: localStorage.getItem('token')
+      }
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to server');
+      setIsConnected(true);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+      setIsConnected(false);
+    });
+
+    // Real-time task updates
+    socket.on('taskCreated', (task) => {
+      console.log('Task created:', task);
+      setTasks(prev => {
+        // Check if task already exists to avoid duplicates
+        const exists = prev.find(t => t._id === task._id);
+        if (exists) return prev;
+        return [...prev, task];
+      });
+    });
+
+    socket.on('taskUpdated', (updatedTask) => {
+      console.log('Task updated:', updatedTask);
+      setTasks(prev => prev.map(task => 
+        task._id === updatedTask._id ? updatedTask : task
+      ));
+    });
+
+    socket.on('taskDeleted', (taskId) => {
+      console.log('Task deleted:', taskId);
+      setTasks(prev => prev.filter(task => task._id !== taskId));
+    });
+
+    socket.on('actionLogged', (action) => {
+      console.log('Action logged:', action);
+      setActionLogs(prev => {
+        // Check if action already exists to avoid duplicates
+        const exists = prev.find(a => a._id === action._id);
+        if (exists) return prev;
+        return [action, ...prev].slice(0, 20);
+      });
+    });
+
+    socket.on('userUpdated', (updatedUser) => {
+      console.log('User updated:', updatedUser);
+      setUsers(prev => prev.map(user => 
+        user._id === updatedUser._id ? updatedUser : user
+      ));
+    });
+
+    socket.on('userCreated', (newUser) => {
+      console.log('User created:', newUser);
+      setUsers(prev => {
+        const exists = prev.find(u => u._id === newUser._id);
+        if (exists) return prev;
+        return [...prev, newUser];
+      });
+    });
+
+    return socket;
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -52,36 +119,24 @@ function App() {
       fetchTasks();
       fetchUsers();
       fetchActionLogs();
+      initializeSocket();
     }
-  }, []);
 
-  useEffect(() => {
-    // Socket event listeners
-    socket.on('taskCreated', (task) => {
-      setTasks(prev => [...prev, task]);
-    });
-
-    socket.on('taskUpdated', (updatedTask) => {
-      setTasks(prev => prev.map(task => 
-        task._id === updatedTask._id ? updatedTask : task
-      ));
-    });
-
-    socket.on('taskDeleted', (taskId) => {
-      setTasks(prev => prev.filter(task => task._id !== taskId));
-    });
-
-    socket.on('actionLogged', (action) => {
-      setActionLogs(prev => [action, ...prev].slice(0, 20));
-    });
-
+    // Cleanup socket on unmount
     return () => {
-      socket.off('taskCreated');
-      socket.off('taskUpdated');
-      socket.off('taskDeleted');
-      socket.off('actionLogged');
+      if (socket) {
+        socket.disconnect();
+      }
     };
   }, []);
+
+  // Separate useEffect for socket cleanup when user logs out
+  useEffect(() => {
+    if (!user && socket) {
+      socket.disconnect();
+      setIsConnected(false);
+    }
+  }, [user]);
 
   const fetchUserData = async () => {
     try {
@@ -94,6 +149,7 @@ function App() {
       });
     } catch (error) {
       console.error('Error fetching user data:', error);
+      handleLogout();
     }
   };
 
@@ -103,6 +159,9 @@ function App() {
       setTasks(response.data);
     } catch (error) {
       console.error('Error fetching tasks:', error);
+      if (error.response?.status === 401) {
+        handleLogout();
+      }
     }
   };
 
@@ -112,6 +171,9 @@ function App() {
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
+      if (error.response?.status === 401) {
+        handleLogout();
+      }
     }
   };
 
@@ -121,6 +183,9 @@ function App() {
       setActionLogs(response.data);
     } catch (error) {
       console.error('Error fetching action logs:', error);
+      if (error.response?.status === 401) {
+        handleLogout();
+      }
     }
   };
 
@@ -134,9 +199,17 @@ function App() {
       axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       
       setUser(response.data.user);
-      fetchTasks();
-      fetchUsers();
-      fetchActionLogs();
+      
+      // Initialize socket connection after successful auth
+      initializeSocket();
+      
+      // Fetch initial data
+      await Promise.all([
+        fetchTasks(),
+        fetchUsers(),
+        fetchActionLogs()
+      ]);
+      
       setFormData({ username: '', email: '', password: '' });
     } catch (error) {
       alert(error.response?.data?.error || 'Authentication failed');
@@ -146,6 +219,13 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
+    
+    // Disconnect socket
+    if (socket) {
+      socket.disconnect();
+      setIsConnected(false);
+    }
+    
     setUser(null);
     setTasks([]);
     setUsers([]);
@@ -156,16 +236,21 @@ function App() {
     e.preventDefault();
     try {
       if (currentTask) {
+        // Update existing task
         await axios.put(`${API_URL}/tasks/${currentTask._id}`, {
           ...taskForm,
           version: currentTask.version
         });
       } else {
+        // Create new task
         await axios.post(`${API_URL}/tasks`, taskForm);
       }
+      
       setShowTaskModal(false);
       setCurrentTask(null);
       setTaskForm({ title: '', description: '', assignedUser: '', priority: 'Medium' });
+      
+      // Don't manually update state - let socket events handle it
     } catch (error) {
       if (error.response?.status === 409) {
         setConflictData({
@@ -198,6 +283,7 @@ function App() {
           status: newStatus,
           version: draggedTask.version
         });
+        // Don't manually update state - let socket events handle it
       } catch (error) {
         if (error.response?.status === 409) {
           setConflictData({
@@ -216,6 +302,7 @@ function App() {
   const handleSmartAssign = async (taskId) => {
     try {
       await axios.post(`${API_URL}/tasks/${taskId}/smart-assign`);
+      // Don't manually update state - let socket events handle it
     } catch (error) {
       alert(error.response?.data?.error || 'Error assigning task');
     }
@@ -225,6 +312,7 @@ function App() {
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
         await axios.delete(`${API_URL}/tasks/${taskId}`);
+        // Don't manually update state - let socket events handle it
       } catch (error) {
         alert(error.response?.data?.error || 'Error deleting task');
       }
@@ -246,6 +334,9 @@ function App() {
       }
       setShowConflictModal(false);
       setConflictData(null);
+      setShowTaskModal(false);
+      setCurrentTask(null);
+      setTaskForm({ title: '', description: '', assignedUser: '', priority: 'Medium' });
     } catch (error) {
       alert(error.response?.data?.error || 'Error resolving conflict');
     }
@@ -341,6 +432,14 @@ function App() {
       <header className="header">
         <h1>Task Management System</h1>
         <div className="header-actions">
+          <div className="connection-status">
+            <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
+              {isConnected ? '🟢' : '🔴'}
+            </span>
+            <span className="status-text">
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </span>
+          </div>
           <span>
             Welcome, {user.username}
             {user.isAdmin && <span className="admin-badge">Admin</span>}
