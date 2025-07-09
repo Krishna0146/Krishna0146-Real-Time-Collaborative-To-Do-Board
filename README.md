@@ -47,3 +47,19 @@ Successfully integrated frontend and backend with seamless real-time collaborati
 
 ## Skills Demonstrated
 Full-stack development, real-time systems, WebSocket implementation, React state management, custom UI design, database optimization, security best practices, and responsive web design.
+
+## SetUp Instructions and how to run -- 
+ ### Clone the repository:
+
+Then :- on terminal of IDE(VSCode)
+
+    cd Client
+    npm install
+    npm run dev
+
+After that -- take another terminal 
+
+    cd Server
+    npm install (or) i
+    npm start
+    
