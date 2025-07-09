@@ -65,3 +65,6 @@ Backend -- fill your environment varibles in .env file
     npm install (or) i
     npm start
     
+Deployed Live app :
+
+https://krishna0146-real-time-collaborative-to-xq7e.onrender.com/
