@@ -5,6 +5,12 @@
   box-sizing: border-box;
 }
 
+html {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
+  min-height: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -12,8 +18,16 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
   min-height: 100vh;
   color: #333;
+}
+
+/* React root container */
+#root {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 /* Authentication Styles */
@@ -108,6 +122,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
 }
 
 .header {
@@ -719,6 +735,32 @@ body {
   transform: translateY(-2px);
 }
 
+/* Connection Status */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 15px;
+  font-size: 0.9em;
+}
+
+.status-indicator {
+  font-size: 0.8em;
+  animation: pulse 2s infinite;
+}
+
+.status-text {
+  color: #666;
+}
+
+.status-indicator.connected + .status-text {
+  color: #28a745;
+}
+
+.status-indicator.disconnected + .status-text {
+  color: #dc3545;
+}
+
 /* Animations */
 @keyframes modalSlideIn {
   from {
@@ -753,6 +795,17 @@ body {
   }
 }
 
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Loading States */
 .loading {
   display: flex;
@@ -769,11 +822,6 @@ body {
   border-top: 3px solid #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 /* Success/Error Messages */
@@ -919,39 +967,4 @@ select:focus {
   .kanban-board {
     flex-direction: column;
   }
-}
-
-.connection-status {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-right: 15px;
-  font-size: 0.9em;
-}
-
-.status-indicator {
-  font-size: 0.8em;
-}
-
-.status-text {
-  color: #666;
-}
-
-.status-indicator.connected + .status-text {
-  color: #28a745;
-}
-
-.status-indicator.disconnected + .status-text {
-  color: #dc3545;
-}
-
-/* Optional: Add a subtle animation for the connection status */
-.status-indicator {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
 }
