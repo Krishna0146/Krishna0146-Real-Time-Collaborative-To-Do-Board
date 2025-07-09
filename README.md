@@ -52,12 +52,14 @@ Full-stack development, real-time systems, WebSocket implementation, React state
  ### Clone the repository:
 
 Then :- on terminal of IDE(VSCode)
+Frontend -- fill your environment varibles in .env file
 
     cd Client
     npm install
     npm run dev
 
 After that -- take another terminal 
+Backend -- fill your environment varibles in .env file
 
     cd Server
     npm install (or) i
